@@ -56,11 +56,7 @@ export default function LoginPage() {
             <Separator className="flex-1" />
           </div>
 
-          <form
-            className="space-y-3 opacity-60"
-            aria-disabled
-            onSubmit={(e) => e.preventDefault()}
-          >
+          <form className="space-y-3 opacity-60" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="you@company.com" disabled />

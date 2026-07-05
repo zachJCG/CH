@@ -14,7 +14,6 @@ import {
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -187,36 +186,34 @@ export function TaskRow({
         </div>
       )}
 
-      <CompleteTaskDialog
-        task={task}
-        open={completeOpen}
-        onOpenChange={setCompleteOpen}
-        onConfirm={handleComplete}
-      />
-      <EditTaskDialog task={task} open={editOpen} onOpenChange={setEditOpen} />
+      {/* mounted on demand so each open starts from the task's current values */}
+      {completeOpen && (
+        <CompleteTaskDialog
+          task={task}
+          onOpenChange={setCompleteOpen}
+          onConfirm={handleComplete}
+        />
+      )}
+      {editOpen && <EditTaskDialog task={task} onOpenChange={setEditOpen} />}
     </div>
   );
 }
 
 function CompleteTaskDialog({
   task,
-  open,
   onOpenChange,
   onConfirm,
 }: {
   task: Task;
-  open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (actualMinutes: number | null) => void;
 }) {
-  const [minutes, setMinutes] = React.useState<string>("");
-
-  React.useEffect(() => {
-    if (open) setMinutes(task.estimateMinutes?.toString() ?? "");
-  }, [open, task.estimateMinutes]);
+  const [minutes, setMinutes] = React.useState<string>(
+    () => task.estimateMinutes?.toString() ?? "",
+  );
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle>Mark done</DialogTitle>
@@ -258,11 +255,9 @@ function CompleteTaskDialog({
 
 function EditTaskDialog({
   task,
-  open,
   onOpenChange,
 }: {
   task: Task;
-  open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
   const { actions } = useDemo();
@@ -271,17 +266,8 @@ function EditTaskDialog({
   const [notes, setNotes] = React.useState(task.notes ?? "");
   const [doOn, setDoOn] = React.useState(task.doOn ?? "");
 
-  React.useEffect(() => {
-    if (open) {
-      setTitle(task.title);
-      setMinutes(task.estimateMinutes?.toString() ?? "");
-      setNotes(task.notes ?? "");
-      setDoOn(task.doOn ?? "");
-    }
-  }, [open, task]);
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Edit task</DialogTitle>

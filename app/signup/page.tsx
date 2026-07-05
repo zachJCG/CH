@@ -29,11 +29,7 @@ export default function SignupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form
-            className="space-y-3 opacity-60"
-            aria-disabled
-            onSubmit={(e) => e.preventDefault()}
-          >
+          <form className="space-y-3 opacity-60" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
               <Input id="name" placeholder="Sarah Calhoun" disabled />

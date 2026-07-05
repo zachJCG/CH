@@ -103,9 +103,20 @@ function loadPersisted(): DemoState | null {
   }
 }
 
+const emptySubscribe = () => () => {};
+
 export function DemoProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = React.useState<DemoState | null>(null);
-  const [hydrated, setHydrated] = React.useState(false);
+  // false during SSR + hydration render, true on the client right after —
+  // consumers gate on it so server and first client render always match.
+  const hydrated = React.useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false,
+  );
+
+  const [state, setState] = React.useState<DemoState | null>(() =>
+    typeof window === "undefined" ? null : (loadPersisted() ?? buildSeedState()),
+  );
 
   // Mirror of `state` so actions called from event handlers can compute and
   // return new entities synchronously (setState updaters run at render time).
@@ -115,18 +126,13 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
   }, [state]);
 
   React.useEffect(() => {
-    setState(loadPersisted() ?? buildSeedState());
-    setHydrated(true);
-  }, []);
-
-  React.useEffect(() => {
-    if (!hydrated || state === null) return;
+    if (state === null) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
       // storage full or unavailable — demo keeps working in memory
     }
-  }, [state, hydrated]);
+  }, [state]);
 
   const actions = React.useMemo<DemoActions>(() => {
     const update = (fn: (s: DemoState) => DemoState) => {
