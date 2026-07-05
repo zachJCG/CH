@@ -29,6 +29,7 @@ import { useDemo } from "@/lib/demo/store";
 import {
   actualMinutes,
   completedOn,
+  completionDay,
   currentProfile,
   profileById,
 } from "@/lib/demo/selectors";
@@ -70,10 +71,8 @@ export default function HistoryPage() {
   const monthTotal = actualMinutes(
     state.tasks.filter(
       (t) =>
-        t.status === "done" &&
         t.assigneeId === personId &&
-        t.doOn !== null &&
-        t.doOn.startsWith(monthPrefix),
+        (completionDay(state, t)?.startsWith(monthPrefix) ?? false),
     ),
   );
 
@@ -105,29 +104,29 @@ export default function HistoryPage() {
       return;
     }
     const rows = state.tasks
+      .map((t) => ({ task: t, day: completionDay(state, t) }))
       .filter(
-        (t): t is Task & { doOn: string } =>
-          t.status === "done" &&
-          t.assigneeId === personId &&
-          t.doOn !== null &&
-          t.doOn >= exportFrom &&
-          t.doOn <= exportTo,
+        (r): r is { task: Task; day: string } =>
+          r.task.assigneeId === personId &&
+          r.day !== null &&
+          r.day >= exportFrom &&
+          r.day <= exportTo,
       )
       .sort(
         (a, b) =>
-          a.doOn.localeCompare(b.doOn) ||
-          (a.doneAt ?? "").localeCompare(b.doneAt ?? ""),
+          a.day.localeCompare(b.day) ||
+          (a.task.doneAt ?? "").localeCompare(b.task.doneAt ?? ""),
       );
     const lines = [
       "date,assignee,title,source,estimate_minutes,actual_minutes",
-      ...rows.map((t) =>
+      ...rows.map(({ task, day }) =>
         [
-          t.doOn,
+          day,
           person.fullName,
-          t.title,
-          t.source,
-          t.estimateMinutes?.toString() ?? "",
-          t.actualMinutes?.toString() ?? "",
+          task.title,
+          task.source,
+          task.estimateMinutes?.toString() ?? "",
+          task.actualMinutes?.toString() ?? "",
         ]
           .map(csvEscape)
           .join(","),

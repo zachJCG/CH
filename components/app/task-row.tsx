@@ -125,6 +125,7 @@ export function TaskRow({
             <button
               type="button"
               onClick={() => setNotesOpen((v) => !v)}
+              aria-expanded={notesOpen}
               className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
             >
               <ChevronDown

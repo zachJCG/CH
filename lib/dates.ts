@@ -6,6 +6,11 @@ export function todayInOrgTz(timezone: string): string {
   return formatInTimeZone(new Date(), timezone, "yyyy-MM-dd");
 }
 
+/** The org-local calendar day ("yyyy-MM-dd") of a UTC ISO timestamp. */
+export function dayInOrgTz(timezone: string, iso: string): string {
+  return formatInTimeZone(parseISO(iso), timezone, "yyyy-MM-dd");
+}
+
 /** A date offset from today ("yyyy-MM-dd") in the org's timezone. */
 export function dateInOrgTz(timezone: string, offsetDays: number): string {
   const today = parseISO(todayInOrgTz(timezone));

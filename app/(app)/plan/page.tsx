@@ -70,7 +70,11 @@ export default function PlanPage() {
   const includedIds = orderedIds.filter((id) => !excludedIds.has(id));
 
   // Sequential stacking: each included item starts where the previous ended.
-  const validStart = TIME_RE.test(startTime) ? startTime : state.org.workdayStart;
+  const validStart = TIME_RE.test(startTime)
+    ? startTime
+    : TIME_RE.test(state.org.workdayStart)
+      ? state.org.workdayStart
+      : "08:30";
   const slots = new Map<string, Slot>();
   let cursor = clockFrom(validStart);
   let totalMinutes = 0;

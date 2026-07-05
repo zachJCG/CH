@@ -1,7 +1,7 @@
 // Pure read helpers over DemoState. Pages use these instead of filtering
 // inline so the queries move to Supabase (phase 02+) in exactly one place.
 
-import { daysBetween, todayInOrgTz } from "@/lib/dates";
+import { dayInOrgTz, daysBetween, todayInOrgTz } from "@/lib/dates";
 import type {
   CheckinRun,
   DayPlan,
@@ -84,13 +84,27 @@ export function backlogPreview(
     .slice(0, limit);
 }
 
+/**
+ * The org-local day a task's work was logged on: the completion timestamp,
+ * not the scheduled do_on (finishing overdue work counts toward today).
+ */
+export function completionDay(state: DemoState, task: Task): string | null {
+  if (task.status !== "done") return null;
+  return task.doneAt ? dayInOrgTz(state.org.timezone, task.doneAt) : task.doOn;
+}
+
 export function completedOn(
   state: DemoState,
   userId: string,
   date: string,
 ): Task[] {
   return state.tasks
-    .filter((t) => t.status === "done" && t.assigneeId === userId && t.doOn === date)
+    .filter(
+      (t) =>
+        t.status === "done" &&
+        t.assigneeId === userId &&
+        completionDay(state, t) === date,
+    )
     .sort((a, b) => (a.doneAt ?? "").localeCompare(b.doneAt ?? ""));
 }
 

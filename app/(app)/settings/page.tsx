@@ -55,7 +55,9 @@ export default function OrganizationSettingsPage() {
     actions.updateOrg({
       name: name.trim() || org.name,
       timezone,
-      workdayStart,
+      workdayStart: /^\d{1,2}:\d{2}$/.test(workdayStart)
+        ? workdayStart
+        : org.workdayStart,
       reminderHour: parseInt(reminderHour, 10),
       escalationAfterDays:
         Number.isFinite(days) && days >= 1 ? days : org.escalationAfterDays,
@@ -108,6 +110,7 @@ export default function OrganizationSettingsPage() {
         <Input
           id="org-workday-start"
           type="time"
+          required
           value={workdayStart}
           onChange={(e) => setWorkdayStart(e.target.value)}
           disabled={!owner}

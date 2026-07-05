@@ -22,9 +22,16 @@ import { Label } from "@/components/ui/label";
 import { SourceBadge } from "@/components/app/source-badge";
 import { useDemo } from "@/lib/demo/store";
 import { orgToday } from "@/lib/demo/selectors";
-import type { Suggestion } from "@/lib/demo/types";
+import type { Suggestion, Task } from "@/lib/demo/types";
 
-export function SuggestionRow({ suggestion }: { suggestion: Suggestion }) {
+export function SuggestionRow({
+  suggestion,
+  onAdded,
+}: {
+  suggestion: Suggestion;
+  /** e.g. the check-in wizard records the created task on its step */
+  onAdded?: (task: Task) => void;
+}) {
   const { state, actions } = useDemo();
   const [addOpen, setAddOpen] = React.useState(false);
   const [title, setTitle] = React.useState(suggestion.title);
@@ -36,11 +43,12 @@ export function SuggestionRow({ suggestion }: { suggestion: Suggestion }) {
     e.preventDefault();
     if (!title.trim()) return;
     const parsed = parseInt(minutes, 10);
-    actions.addSuggestionToDiary(suggestion.id, {
+    const task = actions.addSuggestionToDiary(suggestion.id, {
       title: title.trim(),
       estimateMinutes: Number.isFinite(parsed) && parsed > 0 ? parsed : null,
       doOn: today ? orgToday(state) : null,
     });
+    if (task) onAdded?.(task);
     setAddOpen(false);
     toast.success("Added to your diary");
   };

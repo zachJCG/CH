@@ -211,15 +211,14 @@ export function DemoProvider({ children }: { children: React.ReactNode }) {
 
       setDoOn: (taskId, date) => update((s) => patchTask(s, taskId, { doOn: date })),
 
+      // doOn stays untouched so undo restores the task exactly where it was;
+      // History attributes minutes to doneAt's org-local day, not doOn.
       completeTask: (taskId, actualMinutes) =>
         update((s) =>
           patchTask(s, taskId, {
             status: "done",
             actualMinutes,
             doneAt: new Date().toISOString(),
-            doOn:
-              s.tasks.find((t) => t.id === taskId)?.doOn ??
-              todayInOrgTz(s.org.timezone),
           }),
         ),
 

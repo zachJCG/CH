@@ -49,16 +49,22 @@ function firstOpenStepIndex(run: CheckinRun | null): number {
   return index === -1 ? CHECKIN_STEPS.length - 1 : index;
 }
 
-function StepBody({ step }: { step: CheckinStepDef }) {
+function StepBody({
+  step,
+  onAdded,
+}: {
+  step: CheckinStepDef;
+  onAdded: (task: { id: string }) => void;
+}) {
   switch (step.kind) {
     case "maintenance":
       return <MaintenanceStepContent />;
     case "gmail":
-      return <GmailStepContent />;
+      return <GmailStepContent onAdded={onAdded} />;
     case "inspections":
       return <InspectionsStepContent />;
     default:
-      return <SuggestionsStepContent step={step} />;
+      return <SuggestionsStepContent step={step} onAdded={onAdded} />;
   }
 }
 
@@ -203,7 +209,14 @@ export default function CheckinPage() {
             <CardDescription>{step.description}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <StepBody step={step} />
+            <StepBody
+              step={step}
+              onAdded={(task) =>
+                actions.upsertCheckinStep(step.key, {
+                  addedTaskIds: [...addedTaskIds, task.id],
+                })
+              }
+            />
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">
                 Quick-add a task from this step

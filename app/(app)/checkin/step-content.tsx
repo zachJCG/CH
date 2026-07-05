@@ -24,25 +24,39 @@ import {
 } from "@/lib/demo/selectors";
 import { formatEstimate, plural } from "@/lib/format";
 import type { CheckinStepDef } from "@/lib/checkin";
-import type { Suggestion } from "@/lib/demo/types";
+import type { Suggestion, Task } from "@/lib/demo/types";
+
+type OnAdded = (task: Task) => void;
 
 const NO_SUGGESTIONS = "No pending suggestions — live sync arrives in phase 05.";
 
-function SuggestionList({ suggestions }: { suggestions: Suggestion[] }) {
+function SuggestionList({
+  suggestions,
+  onAdded,
+}: {
+  suggestions: Suggestion[];
+  onAdded?: OnAdded;
+}) {
   if (suggestions.length === 0) {
     return <EmptyState message={NO_SUGGESTIONS} />;
   }
   return (
     <div className="space-y-2">
       {suggestions.map((s) => (
-        <SuggestionRow key={s.id} suggestion={s} />
+        <SuggestionRow key={s.id} suggestion={s} onAdded={onAdded} />
       ))}
     </div>
   );
 }
 
 /** Hostaway / Breezeway: deep link out + whatever suggestions are pending. */
-export function SuggestionsStepContent({ step }: { step: CheckinStepDef }) {
+export function SuggestionsStepContent({
+  step,
+  onAdded,
+}: {
+  step: CheckinStepDef;
+  onAdded?: OnAdded;
+}) {
   const { state } = useDemo();
   const suggestions = step.suggestionSource
     ? pendingSuggestions(state, step.suggestionSource, state.currentUserId)
@@ -60,7 +74,7 @@ export function SuggestionsStepContent({ step }: { step: CheckinStepDef }) {
           {step.deepLink.label} <ExternalLink data-icon="inline-end" />
         </Button>
       )}
-      <SuggestionList suggestions={suggestions} />
+      <SuggestionList suggestions={suggestions} onAdded={onAdded} />
     </div>
   );
 }
@@ -128,7 +142,7 @@ export function MaintenanceStepContent() {
 }
 
 /** Gmail search deep link built from homeowner emails + gmail suggestions. */
-export function GmailStepContent() {
+export function GmailStepContent({ onAdded }: { onAdded?: OnAdded }) {
   const { state } = useDemo();
   const suggestions = pendingSuggestions(state, "gmail", state.currentUserId);
   // Falls back to plain Gmail when no homeowners exist yet.
@@ -155,7 +169,7 @@ export function GmailStepContent() {
           </p>
         )}
       </div>
-      <SuggestionList suggestions={suggestions} />
+      <SuggestionList suggestions={suggestions} onAdded={onAdded} />
     </div>
   );
 }

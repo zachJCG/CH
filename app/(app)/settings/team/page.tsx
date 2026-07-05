@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatDay } from "@/lib/dates";
+import { dayInOrgTz, formatDay } from "@/lib/dates";
 import { useDemo } from "@/lib/demo/store";
 import { isOwner, profileById } from "@/lib/demo/selectors";
 import type { Role } from "@/lib/demo/types";
@@ -112,7 +112,8 @@ export default function TeamSettingsPage() {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{invite.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        Expires {formatDay(invite.expiresAt.slice(0, 10))}
+                        Expires{" "}
+                        {formatDay(dayInOrgTz(state.org.timezone, invite.expiresAt))}
                       </p>
                     </div>
                     <Badge variant="secondary" className="shrink-0 capitalize">

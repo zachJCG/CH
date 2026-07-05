@@ -19,6 +19,15 @@ import {
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -113,10 +122,14 @@ function AppShellInner({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Main column */}
+      {/* Main column — keyed by user so page-local state (wizard position,
+          plan draft, filters) resets when demoing as someone else */}
       <div className="flex min-w-0 flex-1 flex-col">
         <DemoBanner />
-        <main className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 pb-24 md:pb-10">
+        <main
+          key={state.currentUserId}
+          className="mx-auto w-full max-w-3xl flex-1 px-4 pt-6 pb-24 md:pb-10"
+        >
           {children}
         </main>
       </div>
@@ -217,9 +230,39 @@ function UserSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const { state, actions } = useDemo();
   const router = useRouter();
   const me = currentProfile(state);
+  const [confirmReset, setConfirmReset] = React.useState(false);
 
   return (
-    <DropdownMenu>
+    <>
+      {confirmReset && (
+        <Dialog open onOpenChange={setConfirmReset}>
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Reset demo data?</DialogTitle>
+              <DialogDescription>
+                Everything you added or changed in this browser is discarded and
+                the original seed comes back. This can&apos;t be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmReset(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  actions.resetDemo();
+                  setConfirmReset(false);
+                  toast("Demo data reset");
+                }}
+              >
+                Reset
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      <DropdownMenu>
       <DropdownMenuTrigger
         render={
           <button
@@ -258,13 +301,7 @@ function UserSwitcher({ onNavigate }: { onNavigate?: () => void }) {
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem
-          onClick={() => {
-            actions.resetDemo();
-            toast("Demo data reset");
-            onNavigate?.();
-          }}
-        >
+        <DropdownMenuItem onClick={() => setConfirmReset(true)}>
           <RefreshCcw /> Reset demo data
         </DropdownMenuItem>
         <DropdownMenuItem
@@ -276,7 +313,8 @@ function UserSwitcher({ onNavigate }: { onNavigate?: () => void }) {
           <LogOut /> Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+      </DropdownMenu>
+    </>
   );
 }
 
